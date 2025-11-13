@@ -20,7 +20,7 @@ $full_name = $user['first_name'] . ' ' . $user['last_name'];
 $email = $user['email'];
 
 $message = '';
-$alertScript = ''; // ✅ For SweetAlert alerts
+$alertScript = '';
 
 // =================== HANDLE BOOKING ===================
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'book') {
@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $time = $_POST['time'];
     $service = $_POST['service'];
 
-    // Limit to 2 bookings per user per day (based on created_at)
+    // Limit to 2 bookings per user per day
     $limit_sql = "SELECT COUNT(*) AS total FROM appointments 
                   WHERE user_id = ? 
                   AND DATE(created_at) = CURDATE() 
@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
           title: 'Booking Limit Reached!',
           text: 'You can only make 2 booking requests per day.',
           icon: 'warning',
-          confirmButtonColor: '#3085d6'
+          confirmButtonColor: '#80A1BA'
         });";
     } else {
         // Check for time slot conflict
@@ -64,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
               title: 'Time Slot Unavailable!',
               text: 'This time slot is already booked at $location. Please choose another time.',
               icon: 'error',
-              confirmButtonColor: '#d33'
+              confirmButtonColor: '#91C4C3'
             });";
         } else {
             $insert_sql = "INSERT INTO appointments 
@@ -78,14 +78,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
                   title: 'Appointment Booked!',
                   text: 'Your request for $location has been submitted successfully!',
                   icon: 'success',
-                  confirmButtonColor: '#3085d6'
+                  confirmButtonColor: '#B4DEBD'
                 });";
             } else {
                 $alertScript = "Swal.fire({
                   title: 'Booking Failed!',
                   text: 'Something went wrong. Please try again.',
                   icon: 'error',
-                  confirmButtonColor: '#d33'
+                  confirmButtonColor: '#91C4C3'
                 });";
             }
         }
@@ -110,14 +110,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
               title: 'Deleted!',
               text: 'Your appointment was successfully deleted.',
               icon: 'success',
-              confirmButtonColor: '#3085d6'
+              confirmButtonColor: '#B4DEBD'
             });";
         } else {
             $alertScript = "Swal.fire({
               title: 'Delete Failed!',
               text: 'Unable to delete appointment. Please try again.',
               icon: 'error',
-              confirmButtonColor: '#d33'
+              confirmButtonColor: '#91C4C3'
             });";
         }
     } else {
@@ -136,38 +136,58 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Your Dental Appointment</title>
+    <title>Book Your Dental Appointment - DentLink</title>
     <link rel="stylesheet" href="bootstrap-5.3.3-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        :root {
+            --primary-color: #80A1BA;
+            --secondary-color: #91C4C3;
+            --accent-color: #B4DEBD;
+            --light-color: #FFF7DD;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #B4DEBD 0%, #FFF7DD 100%);
             min-height: 100vh;
             padding: 20px;
         }
 
         .page-header {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(128, 161, 186, 0.15);
             margin-bottom: 30px;
             text-align: center;
+            border-top: 5px solid var(--primary-color);
+        }
+
+        .page-header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 10px;
         }
 
         .calendar-container {
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(128, 161, 186, 0.15);
             margin-bottom: 30px;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .calendar-container h4 {
+            color: var(--primary-color);
+            font-weight: 600;
         }
 
         iframe {
-            border: 1px solid #ccc;
-            border-radius: 8px;
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
             width: 100%;
             height: 500px;
         }
@@ -181,49 +201,167 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
         .booking-form {
             flex: 2;
             background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(128, 161, 186, 0.15);
+            border-top: 5px solid var(--accent-color);
+        }
+
+        .booking-form h4 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(128, 161, 186, 0.25);
         }
 
         .sidebar {
             flex: 1;
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            max-height: 600px;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 24px rgba(128, 161, 186, 0.15);
+            max-height: 700px;
             overflow-y: auto;
+            border-top: 5px solid var(--light-color);
+        }
+
+        .sidebar h5 {
+            color: var(--primary-color);
+            font-weight: 600;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         .appointment-item {
-            border-bottom: 1px solid #e9ecef;
-            padding: 15px 0;
+            background: linear-gradient(135deg, rgba(180, 222, 189, 0.1) 0%, rgba(255, 247, 221, 0.1) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary-color);
+            transition: all 0.3s ease;
         }
 
-        .appointment-item:last-child {
-            border-bottom: none;
+        .appointment-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(128, 161, 186, 0.2);
+        }
+
+        .appointment-item h6 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .appointment-item .small {
+            color: #666;
         }
 
         .delete-btn {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 16px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             width: 100%;
-            margin-top: 8px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .delete-btn:hover {
-            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(128, 161, 186, 0.3);
+            color: white;
+        }
+
+        .btn-back {
+            background: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .alert-info {
+            background-color: rgba(180, 222, 189, 0.2);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 10px;
+            color: #2d3748;
+        }
+
+        /* Custom Scrollbar for Sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
         }
 
         @media (max-width: 768px) {
             .booking-section {
                 flex-direction: column;
+            }
+
+            .page-header {
+                padding: 20px;
+            }
+
+            .booking-form {
+                padding: 25px;
             }
         }
     </style>
@@ -232,18 +370,18 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
 <body>
 
     <div class="container-fluid">
-        <a href="dashboard.php" class="btn btn-outline-primary mb-3">
+        <a href="dashboard.php" class="btn btn-back mb-3">
             <i class="bi bi-arrow-left"></i> Back to Dashboard
         </a>
 
         <div class="page-header">
-            <h1><i class="bi bi-calendar-check text-primary"></i> Book Your Dental Appointment</h1>
+            <h1><i class="bi bi-calendar-check"></i> Book Your Dental Appointment</h1>
             <p class="text-muted mb-0">Welcome, <strong><?= htmlspecialchars($full_name) ?></strong> (<?= htmlspecialchars($email) ?>)</p>
         </div>
 
         <?= $message ?>
 
-        <!-- Google Calendar (Privacy Mode - only shows time blocks) -->
+        <!-- Google Calendar -->
         <div class="calendar-container">
             <h4 class="mb-3"><i class="bi bi-calendar3"></i> Check Available Time Slots</h4>
             <p class="text-muted small">Calendar shows available time slots. Booked times will appear as busy blocks.</p>
@@ -257,7 +395,7 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
         <div class="booking-section">
             <!-- Booking Form -->
             <div class="booking-form">
-                <h4 class="mb-4"><i class="bi bi-clipboard-check"></i> Appointment Details</h4>
+                <h4><i class="bi bi-clipboard-check"></i> Appointment Details</h4>
                 <form method="POST">
                     <input type="hidden" name="action" value="book">
 
@@ -280,11 +418,9 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
                         <select name="time" id="timeSlot" class="form-select" required>
                             <option value="">-- Select Time --</option>
                             <?php
-                            // Generate times in HH:MM:SS to match DB format
                             for ($hour = 8; $hour <= 16; $hour++) {
-                                $timeValue = sprintf("%02d:00:00", $hour); // "08:00:00"
+                                $timeValue = sprintf("%02d:00:00", $hour);
                                 $displayTime = date("h:i A", strtotime($timeValue));
-                                // store original label to avoid text corruption later
                                 echo "<option value='$timeValue' data-label='$displayTime'>$displayTime</option>";
                             }
                             ?>
@@ -338,7 +474,7 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
                         <p id="descriptionText" class="mb-0 mt-2"></p>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 mt-3">
+                    <button type="submit" class="btn btn-custom w-100 mt-3">
                         <i class="bi bi-send"></i> Submit Booking Request
                     </button>
                 </form>
@@ -346,50 +482,42 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
 
             <!-- Sidebar -->
             <div class="sidebar">
-                <h5 class="text-center mb-3"><i class="bi bi-hourglass-split text-warning"></i> Pending Requests</h5>
+                <h5><i class="bi bi-hourglass-split text-warning"></i> Pending Requests</h5>
                 <?php if ($pending && $pending->num_rows > 0): ?>
                     <?php while ($p = $pending->fetch_assoc()): ?>
                         <div class="appointment-item">
-                            <h6 class="mb-2"><strong><?= htmlspecialchars($p['description']) ?></strong></h6>
+                            <h6><?= htmlspecialchars($p['description']) ?></h6>
                             <p class="mb-1 small">
                                 <i class="bi bi-calendar-date"></i> <?= htmlspecialchars($p['date']) ?>
-                                @ <?= htmlspecialchars($p['start_time']) ?>
+                                @ <?= date("h:i A", strtotime($p['start_time'])) ?>
                             </p>
                             <p class="mb-2 small">
                                 <i class="bi bi-geo-alt"></i> <?= htmlspecialchars($p['location']) ?>
                             </p>
-                            <form method="POST">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="id" value="<?= $p['id'] ?>">
-                                <button type="button" class="delete-btn swal-delete-btn" data-id="<?= $p['id'] ?>">
-                                    <i class="bi bi-trash"></i> Delete Request
-                                </button>
-                            </form>
+                            <button type="button" class="delete-btn swal-delete-btn" data-id="<?= $p['id'] ?>">
+                                <i class="bi bi-trash"></i> Delete Request
+                            </button>
                         </div>
                     <?php endwhile; ?>
                 <?php else: ?>
                     <p class="text-muted text-center">No pending requests.</p>
                 <?php endif; ?>
 
-                <h5 class="text-center mb-3 mt-4"><i class="bi bi-x-circle text-danger"></i> Denied Requests</h5>
+                <h5 class="mt-4"><i class="bi bi-x-circle text-danger"></i> Denied Requests</h5>
                 <?php if ($denied && $denied->num_rows > 0): ?>
                     <?php while ($d = $denied->fetch_assoc()): ?>
                         <div class="appointment-item">
-                            <h6 class="mb-2 text-danger"><strong><?= htmlspecialchars($d['description']) ?></strong></h6>
+                            <h6 class="text-danger"><?= htmlspecialchars($d['description']) ?></h6>
                             <p class="mb-1 small">
                                 <i class="bi bi-calendar-date"></i> <?= htmlspecialchars($d['date']) ?>
-                                @ <?= htmlspecialchars($d['start_time']) ?>
+                                @ <?= date("h:i A", strtotime($d['start_time'])) ?>
                             </p>
                             <p class="mb-2 small">
                                 <i class="bi bi-geo-alt"></i> <?= htmlspecialchars($d['location']) ?>
                             </p>
-                            <form method="POST">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="id" value="<?= $d['id'] ?>">
-                                <button type="button" class="delete-btn swal-delete-btn" data-id="<?= $p['id'] ?>">
-                                    <i class="bi bi-trash"></i> Delete Request
-                                </button>
-                            </form>
+                            <button type="button" class="delete-btn swal-delete-btn" data-id="<?= $d['id'] ?>">
+                                <i class="bi bi-trash"></i> Delete Request
+                            </button>
                         </div>
                     <?php endwhile; ?>
                 <?php else: ?>
@@ -415,9 +543,8 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
                 fetch(`get_booked_times.php?date=${encodeURIComponent(date)}&location=${encodeURIComponent(location)}`)
                     .then(response => response.json())
                     .then(bookedTimes => {
-                        // Reset options before applying booked states
                         for (let option of timeSelect.options) {
-                            if (option.value === "") continue; // skip the placeholder
+                            if (option.value === "") continue;
                             if (bookedTimes.includes(option.value)) {
                                 option.disabled = true;
                                 if (!option.textContent.includes('(Booked)')) {
@@ -435,7 +562,7 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
             dateInput.addEventListener('change', fetchBookedSlots);
             locationSelect.addEventListener('change', fetchBookedSlots);
         });
-        // Service descriptions
+
         const serviceDescriptions = {
             "All Ceramic Veneers with E-Max": "Tooth-colored, durable ceramic veneers made from E-Max material, used to enhance the appearance, shape, and color of front teeth for a natural, aesthetic smile.",
             "All Ceramic Fixed Bridge with Zirconia": "Strong, tooth-colored bridge made from zirconia, used to replace missing teeth while providing a natural appearance and durable long-term function.",
@@ -473,7 +600,6 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
             "Wisdom / 3rd Molar Extraction": "Removal of impacted or misaligned wisdom teeth."
         };
 
-        // Show service description when selected
         const serviceSelect = document.getElementById('serviceSelect');
         const descriptionBox = document.getElementById('serviceDescription');
         const descriptionText = document.getElementById('descriptionText');
@@ -500,15 +626,14 @@ $denied = $conn->query("SELECT * FROM appointments WHERE user_id = $user_id AND 
                     text: "You won't be able to undo this action!",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
+                    confirmButtonColor: '#B4DEBD',
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Create a form and submit it via POST
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = ''; // same page
+                        form.action = '';
 
                         const actionInput = document.createElement('input');
                         actionInput.type = 'hidden';
